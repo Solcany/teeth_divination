@@ -1,0 +1,49 @@
+body {
+	font-family: sans-serif;
+}
+
+ol.container {
+  padding: 0;
+  padding-left: 20px;
+  box-sizing: border-box;
+  list-style-type: decimal;
+ }
+
+li.emotion_container {
+	display: list-item;	
+}
+
+li.emotion_container div.emotion_wrapper {
+	display: flex;
+	padding: 20px 0;
+}
+
+ul.stats {
+	display: flex;
+	list-style-type: none;
+	padding-left: 0;		
+}
+
+ul.stats li {
+	display: flex;
+	align-items: center;
+	padding-left: 20px;
+}
+
+ul.stats li span.label {
+	color: navy;
+}
+
+ul.stats li span.probability_wrapper {
+	display: block;
+	position: relative;
+	height: 10px;
+	background-color: lightgray;
+	margin-right: 5px;	
+}
+
+ul.stats li span.probability_wrapper span.probability{
+	display: block;
+	height: 10px;
+	background-color: navy;
+}

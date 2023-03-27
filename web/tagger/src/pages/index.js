@@ -2,14 +2,16 @@ import {useState} from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import { Inter } from 'next/font/google'
-import styles from '@/styles/Home.module.css'
+import styles from '@/styles/Home.module.scss'
+import {classes, parseCsvFile} from '@/utils/utils'
 const inter = Inter({ subsets: ['latin'] })
 const FORMATTER = '\n\n'
 
 
 
 export default function Home() {
-  const [content, setContent] = useState("")
+  const [content, setContent] = useState([])
+  const [domains, setDomains] = useState([])
 
   function FormUploadData() {
     function changeHandler(e) {
@@ -24,7 +26,7 @@ export default function Home() {
       }
     }
     return (
-          <form method="post" enctype="multipart/form-data">
+          <form method="post" encType="multipart/form-data">
             <div>
               <label htmlFor="file">Choose file to upload</label>
               <input 
@@ -38,34 +40,97 @@ export default function Home() {
     )
   }
 
+  function FormUploadRulesData() {
+
+    function changeHandler(e) {
+      if(e.target.files.length > 0) {
+        const reader = new FileReader();
+        reader.readAsText(e.target.files[0]);
+        reader.onload = function(e) {
+          const rows = parseCsvFile(e.target.result)
+          let domains = rows.map((row) => row.Domain)
+          domains = domains.filter((domain) => domain !== "")
+          setDomains(domains)
+        }
+      }
+    }
+
+    return (
+          <form method="post" encType="multipart/form-data">
+            <div>
+              <label htmlFor="file">Choose csv to upload</label>
+              <input 
+                onChange={changeHandler}
+                accept="text/csv"
+                type="file" 
+                id="file" 
+                name="file"/>
+            </div>
+          </form>
+    )
+  }
+
+  function Paragraph({isSelected, onClick, children}) {
+
+    function getStyles() {
+      if (isSelected) {
+        return classes([styles.paragraph, styles.selected])
+      } else {
+        return classes([styles.paragraph, styles.unselected])          
+      }
+    }
+
+    return (
+      <p onClick={onClick} className={getStyles()}>
+        {children}
+      </p>
+    )
+  }
+
   function ListParagraphs({content}) {
+    const [selected, setSelected] = useState(new Array(content.length).fill(false))
 
-    [selected, setSelected] = useState(new Array(content.length).fill(false))
-
-    function Paragraph({isSelected, onClick, children}) {
-      return (
-        <p onClick={onClick}>
-          {children}
-        </p>
-      )
+    function handleParagraphClicked(index) {
+      setSelected(prevState => {
+        const newSelected = prevState.map((item, i) => i === index ? true : false);
+        return newSelected;
+      });
     }
 
     return (
       <ul>
           {
             content.map((entry, index) => {
-            return (<li>
-                      <Paragraph 
-                        isSelected={selected[index]}
-                        key={index}>
-                        {entry}
-                      </Paragraph>
-                    </li>
-                    )
+              return (<li key={index}>
+                        <Paragraph 
+                          index={index}
+                          onClick={() => handleParagraphClicked(index)}
+                          isSelected={selected[index]}>
+                          {entry}
+                        </Paragraph>
+                      </li>
+                      )
             })
           } 
       </ul>
 
+    )
+  }
+
+  function ListButtons() {
+    return (
+      <ul>
+        {
+          domains.map((domain) => {
+            return (
+              <li>
+                <button>{domain}</button>  
+              </li>                
+
+            )
+          })
+        }
+      </ul>
     )
   }
 
@@ -77,11 +142,18 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main>
+      <main className={styles.main}>
       <FormUploadData/>
+      <FormUploadRulesData/>
+        <div>
+        {domains.length > 0 && (
+          <ListButtons/>
+          )}
+        </div>
+
         <div>
         {content.length > 0 && (
-
+          <ListParagraphs content={content}/>
         )}
         </div>
       </main>

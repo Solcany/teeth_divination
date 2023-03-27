@@ -1,0 +1,27 @@
+.card {
+	position: relative; 
+
+	.button {
+		position: absolute; 
+		display: block;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+	}
+
+	.sprite_player {
+		position: absolute; 
+	}
+
+	.audio_player_area  {
+		display: block;
+		position: absolute; 
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+	}	
+}

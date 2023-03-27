@@ -21,6 +21,7 @@ export default function Home() {
         reader.onload = function(e) {
             var raw = reader.result;
             let formatted = raw.split(FORMATTER)
+            formatted = formatted.map((f) => ({text: f}))
             setContent(formatted)
         };
       }
@@ -87,7 +88,7 @@ export default function Home() {
     )
   }
 
-  function ListParagraphs({content}) {
+  function ListParagraphs() {
     const [selected, setSelected] = useState(new Array(content.length).fill(false))
 
     function handleParagraphClicked(index) {
@@ -106,8 +107,12 @@ export default function Home() {
                           index={index}
                           onClick={() => handleParagraphClicked(index)}
                           isSelected={selected[index]}>
-                          {entry}
+                          {entry.text}
                         </Paragraph>
+                        {entry.tags && entry.tags.length > 0 && (
+                          
+                        )}
+
                       </li>
                       )
             })
@@ -153,7 +158,7 @@ export default function Home() {
 
         <div>
         {content.length > 0 && (
-          <ListParagraphs content={content}/>
+          <ListParagraphs/>
         )}
         </div>
       </main>

@@ -10,19 +10,24 @@ const FORMATTER = '\n\n'
 
 
 export default function Home() {
+  const [contentFilename, setContentFilename] = useState("")
+  const [domainsFilename, setDomainsFilename] = useState("")
   const [content, setContent] = useState([])
+  const [tags, setTags] = useState([])
+  const [selectedContentId, setSelectedContentId] = useState(-1)
   const [domains, setDomains] = useState([])
 
-  function FormUploadData() {
+  function FormUploadContent() {
     function changeHandler(e) {
       if(e.target.files.length > 0) {
         const reader = new FileReader()
+        setContentFilename(e.target.files[0].name)
         reader.readAsText(e.target.files[0])
         reader.onload = function(e) {
-            var raw = reader.result;
-            let formatted = raw.split(FORMATTER)
-            formatted = formatted.map((f) => ({text: f}))
+            const raw = reader.result;
+            const formatted = raw.split(FORMATTER)
             setContent(formatted)
+            setTags(new Array(formatted.length).fill([]))
         };
       }
     }
@@ -41,11 +46,11 @@ export default function Home() {
     )
   }
 
-  function FormUploadRulesData() {
-
+  function FormUploadDomains() {
     function changeHandler(e) {
       if(e.target.files.length > 0) {
         const reader = new FileReader();
+        setDomainsFilename(e.target.files[0].name)
         reader.readAsText(e.target.files[0]);
         reader.onload = function(e) {
           const rows = parseCsvFile(e.target.result)
@@ -55,7 +60,6 @@ export default function Home() {
         }
       }
     }
-
     return (
           <form method="post" encType="multipart/form-data">
             <div>
@@ -72,7 +76,6 @@ export default function Home() {
   }
 
   function Paragraph({isSelected, onClick, children}) {
-
     function getStyles() {
       if (isSelected) {
         return classes([styles.paragraph, styles.selected])
@@ -80,7 +83,6 @@ export default function Home() {
         return classes([styles.paragraph, styles.unselected])          
       }
     }
-
     return (
       <p onClick={onClick} className={getStyles()}>
         {children}
@@ -88,14 +90,18 @@ export default function Home() {
     )
   }
 
-  function ListParagraphs() {
-    const [selected, setSelected] = useState(new Array(content.length).fill(false))
-
-    function handleParagraphClicked(index) {
-      setSelected(prevState => {
-        const newSelected = prevState.map((item, i) => i === index ? true : false);
-        return newSelected;
-      });
+  function ListContent() {
+    function handleParagraphClick(index) {
+      // selects the paragraph when clicked 
+      setSelectedContentId(index)
+    }
+    function handleTagClick(index, tag) {
+      // deletes the tag when clicked
+     setTags(prevState => {
+        let newState = [...prevState]
+        newState[index] = newState[index].filter((t) => t !== tag);
+        return newState;
+      });   
     }
 
     return (
@@ -105,31 +111,45 @@ export default function Home() {
               return (<li key={index}>
                         <Paragraph 
                           index={index}
-                          onClick={() => handleParagraphClicked(index)}
-                          isSelected={selected[index]}>
-                          {entry.text}
+                          onClick={() => handleParagraphClick(index)}
+                          isSelected={index === selectedContentId}>
+                          {entry}
                         </Paragraph>
-                        {entry.tags && entry.tags.length > 0 && (
-                          
+                        {tags[index].length > 0 && (
+                          tags[index].map((tag, index)=> {
+                            return (
+                                <button key={index} onClick={()=> handleTagClick(index, tag)}>
+                                  {tag}
+                                </button>
+                            )
+                          })
                         )}
-
                       </li>
                       )
             })
           } 
       </ul>
-
     )
   }
 
-  function ListButtons() {
+  function ListDomainButtons() {
+    function handleClick(domain) {
+      // add domains to the selected paragraph
+      if (selectedContentId > -1) {
+         setTags(prevState => {
+            const newState = [...prevState]
+            newState[selectedContentId] = [...newState[selectedContentId], domain]
+            return newState;
+          });
+      }      
+    }
     return (
       <ul>
         {
-          domains.map((domain) => {
+          domains.map((domain, index) => {
             return (
-              <li>
-                <button>{domain}</button>  
+              <li key={index} >
+                <button onClick={()=> handleClick(domain)}>{domain}</button>  
               </li>                
 
             )
@@ -137,6 +157,59 @@ export default function Home() {
         }
       </ul>
     )
+  }
+
+  function downloadJson(object, filename) {
+    const json = JSON.stringify(object, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up the URL object
+    URL.revokeObjectURL(url);
+  }
+
+  function removeFileExtension(string) {
+    return string.replace(/\.[^/.]+$/, "");
+  }
+
+  function getDateString() {
+    const date = new Date();
+    let minute = date.getMinutes();
+    let hours = date.getHours()
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    return `${hours}-${minute}-${day}-${month}-${year}`;
+  }
+
+  function exportJson() {
+    const data = {}
+    data.contentFilename = contentFilename
+    data.domainsFilename = domainsFilename
+    const date = getDateString()
+    data.date = date
+    data.domains = domains
+
+    const d = content.reduce((acc, entry, index) => {
+      let entry_tags = tags[index]
+      if(entry_tags.length > 0) {
+        let obj = {entry: entry, entryIndex: index, tags: entry_tags}
+        acc.push(obj)
+      }
+      return acc
+    }, [])
+
+    data.data = d
+
+    const jsonFilename = removeFileExtension(contentFilename) + "_" + date.replaceAll("-", "_") + "_tags" + ".json"
+    downloadJson(data, jsonFilename)
   }
 
   return (
@@ -148,17 +221,18 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-      <FormUploadData/>
-      <FormUploadRulesData/>
+      <button onClick={()=>exportJson()}> download </button>
+      <FormUploadContent/>
+      <FormUploadDomains/>
         <div>
         {domains.length > 0 && (
-          <ListButtons/>
+          <ListDomainButtons/>
           )}
         </div>
 
         <div>
         {content.length > 0 && (
-          <ListParagraphs/>
+          <ListContent/>
         )}
         </div>
       </main>

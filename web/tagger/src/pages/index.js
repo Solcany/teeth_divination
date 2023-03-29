@@ -37,7 +37,7 @@ export default function Home() {
               <label htmlFor="file">Choose file to upload</label>
               <input 
                 onChange={changeHandler}
-                accept="text/*"
+                accept="text/txt"
                 type="file" 
                 id="file" 
                 name="file"/>
@@ -74,6 +74,43 @@ export default function Home() {
           </form>
     )
   }
+
+
+  function FormUploadProject() { 
+    function changeHandler(e) {
+      if(e.target.files.length > 0) {
+        const reader = new FileReader();
+        reader.readAsText(e.target.files[0]);
+        reader.onload = function(e) {
+          const json = JSON.parse(e.target.result)
+          // set tags from json to the current tags
+          if(json.data && json.data.length > 0) {
+            setTags((prevState)=> {
+              let newState = [...prevState]
+              for(let i = 0; i < json.data.length; i++) {
+                const v = json.data[i]
+                newState[v.entryIndex] = v.tags
+              }
+              return newState
+            })
+          }
+        }
+      }
+    }
+    return (
+          <form method="post" encType="multipart/form-data">
+            <div>
+              <label htmlFor="file">Choose json to upload</label>
+              <input 
+                onChange={changeHandler}
+                accept="text/json"
+                type="file" 
+                id="file" 
+                name="file"/>
+            </div>
+          </form>
+    )
+  }  
 
   function Paragraph({isSelected, onClick, children}) {
     function getStyles() {
@@ -224,6 +261,7 @@ export default function Home() {
       <button onClick={()=>exportJson()}> download </button>
       <FormUploadContent/>
       <FormUploadDomains/>
+      <FormUploadProject/>
         <div>
         {domains.length > 0 && (
           <ListDomainButtons/>

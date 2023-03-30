@@ -107,15 +107,15 @@ function ListContent({selectedItemIndex,
 
   const memoizedItems = useMemo(() => {
     return content.map((item, index) => {
-      return (<li key={index}
-                  onClick={() => onItemClicked(index)}>
-                <p className={getParagraphStyles(index)}>
+      return (<li key={index}>
+                <p onClick={() => onItemClicked(index)}
+                   className={getParagraphStyles(index)}>
                   {item}
                 </p>                    
                 {tags[index].length > 0 && (
-                  tags[index].map((tag, index)=> {
+                  tags[index].map((tag, tIndex)=> {
                     return (
-                        <button key={index} onClick={()=> onTagClicked(tag, index)}>
+                        <button key={tIndex} onClick={()=> onTagClicked(tag, index)}>
                           {tag}
                         </button>
                     )

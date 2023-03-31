@@ -1,4 +1,7 @@
-$gray: #444;
+$gray: #c2c2c2;
+$blue: #aede54;
+$offset1: 10px;
+$offset2: 20px;
 
 .main {
   height: 100vh;
@@ -8,14 +11,47 @@ $gray: #444;
     width: 100%;
     height: 95%;
     display: flex;
+
+    .form {
+      padding: $offset2 $offset1;
+      font-family: var(--lato-regular);
+
+      &.form_domains {
+          border-bottom: 1px solid $gray;
+      }
+
+      .container {
+
+        .label {
+           display: block;
+           &:hover {
+            cursor: pointer;
+          }       
+        }
+
+        .input {
+          padding-top: $offset1;
+           &:hover {
+            cursor: pointer;
+          }       
+        }
+      }
+    }
    
     .col1 {
-      width: 75%;
+      width: 70%;
       height: 100%;
-      border-right: solid 1px $gray;
+      border-left: solid 1px $gray;
       position: relative;
+      display: flex;
+      flex-direction: column;
+
+      .forms {
+        display: flex;
+      }
 
       .list_text_container {
+        border-top: 1px solid $gray;
         position: relative;
         width: 100%; 
         height: 100%;
@@ -24,38 +60,69 @@ $gray: #444;
           position: absolute;
           width: 100%;
           height: 100%;
-          overflow: scroll;
+          overflow-y: scroll;
           overflow-anchor: none;
 
           li {
+            width: 60%;
+            padding: $offset1;
+
+            &.selected {
+              border: 2px solid $blue;
+              border-radius: 3px;
+            }
+
+            &.unselected {
+
+            }
             .paragraph {
               color: black;    
               cursor: pointer;
-
-              &.selected {
-                background-color: blue;
-              }
-
-              &.unselected {
-
-              }
+              font-size: 20px;
+              line-height: 24px;
+              font-family: var(--plex-regular);
+              box-sizing: border-box;
             }
           }
         }
       }
     }
-
     .col2 {
-      width: 25%;
-      height: 100%;    
-      background-color: blue;    
+      width: 30%;
+      height: 100%; 
+
+      .list_domains {
+          padding: $offset2 $offset1;
+          display: flex;
+          flex-wrap: wrap;
+
+          li {
+            padding: $offset1 $offset1;
+
+            button {
+            &:hover {
+              cursor: pointer;
+            }                
+            }
+          }
+      }   
     }
   }
 
   .footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
     border-top: solid 1px $gray;    
     width: 100%;
-    height: 5%;    
+    height: 5%; 
+    button {
+      height: 30px;
+      &:hover {
+        cursor: pointer;
+      }       
+    }   
   }
 }
 

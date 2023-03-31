@@ -4,8 +4,11 @@ import Image from 'next/image'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.scss'
 import {classes, parseCsvFile} from '@/utils/utils'
-const inter = Inter({ subsets: ['latin'] })
+import localFont from 'next/font/local'
+const font = localFont({ src: '../../public/fonts/lato-regular-webfont.woff2',
+                        variable: '--lato-regular'})
 const FORMATTER = '\n\n'
+
 
 
 function FormUploadContent({onContentUploaded}) {
@@ -22,14 +25,15 @@ function FormUploadContent({onContentUploaded}) {
     }
   }
   return (
-        <form method="post" encType="multipart/form-data">
-          <div>
-            <label htmlFor="file">Choose file to upload</label>
+        <form className={styles.form} method="post" encType="multipart/form-data">
+          <div className={styles.container}>
+            <label className={styles.label} 
+                   htmlFor="file">Upload a text document (.txt)</label>
             <input 
               onChange={changeHandler}
-              accept="text/txt"
+              className={styles.input}
+              accept=".txt"
               type="file" 
-              id="file" 
               name="file"/>
           </div>
         </form>
@@ -51,14 +55,15 @@ function FormUploadDomains({onDomainsUploaded}) {
     }
   }
   return (
-        <form method="post" encType="multipart/form-data">
-          <div>
-            <label htmlFor="file">Choose csv to upload</label>
+        <form className={classes([styles.form, styles.formDomains])} method="post" encType="multipart/form-data">
+          <div className={styles.container}>
+            <label className={styles.label} 
+                   htmlFor="file">Upload domains (.csv)</label>
             <input 
               onChange={changeHandler}
-              accept="text/csv"
+              className={styles.input}              
+              accept=".csv"
               type="file" 
-              id="file" 
               name="file"/>
           </div>
         </form>
@@ -77,12 +82,14 @@ function FormUploadProject({onProjectUploaded}) {
     }
   }
   return (
-        <form method="post" encType="multipart/form-data">
-          <div>
-            <label htmlFor="file">Choose json to upload</label>
+        <form className={styles.form} method="post" encType="multipart/form-data">
+          <div className={styles.container}>
+            <label className={styles.label}  
+                   htmlFor="file">Upload project (.json)</label>
             <input 
               onChange={changeHandler}
-              accept="text/json"
+              className={styles.input}
+              accept=".json"
               type="file" 
               id="file" 
               name="file"/>
@@ -97,19 +104,19 @@ function ListContent({selectedItemIndex,
                       tags,
                       content}) {
 
-  function getParagraphStyles(index) {
+  function getStyles(index) {
     if (index == selectedItemIndex) {
-      return classes([styles.paragraph, styles.selected])
+      return classes([styles.selected])
     } else {
-      return classes([styles.paragraph, styles.unselected])          
+      return classes([styles.unselected])          
     }
   }
 
   const memoizedItems = useMemo(() => {
     return content.map((item, index) => {
-      return (<li key={index}>
+      return (<li key={index} className={getStyles(index)}>
                 <p onClick={() => onItemClicked(index)}
-                   className={getParagraphStyles(index)}>
+                   className={styles.paragraph}>
                   {item}
                 </p>                    
                 {tags[index].length > 0 && (
@@ -135,7 +142,7 @@ function ListContent({selectedItemIndex,
 
   function ListDomainButtons({domains, onDomainClicked}) {
     return (
-      <ul>
+      <ul className={styles.list_domains}>
         {
           domains.map((domain, index) => {
             return (
@@ -145,7 +152,7 @@ function ListContent({selectedItemIndex,
 
             )
           })
-        }
+        }      
       </ul>
     )
   }
@@ -180,11 +187,12 @@ export default function Home() {
   function getDateString() {
     const date = new Date();
     let minute = date.getMinutes();
+    let seconds = date.getSeconds();    
     let hours = date.getHours()
     let day = date.getDate();
     let month = date.getMonth() + 1;
     let year = date.getFullYear();
-    return `${hours}-${minute}-${day}-${month}-${year}`;
+    return `${hours}-${minute}-${seconds}-${day}-${month}-${year}`;
   }
 
   function exportJson() {
@@ -195,15 +203,15 @@ export default function Home() {
     data.date = date
     data.domains = domains
     const d = content.reduce((acc, entry, index) => {
-      let entry_tags = tags[index]
-      if(entry_tags.length > 0) {
-        let obj = {entry: entry, entryIndex: index, tags: entry_tags}
+      let entry_domains = tags[index]
+      if(entry_domains.length > 0) {
+        let obj = {entry: entry, entryIndex: index, domains: entry_domains}
         acc.push(obj)
       }
       return acc
     }, [])
     data.data = d
-    const jsonFilename = removeFileExtension(contentFilename) + "_" + date.replaceAll("-", "_") + "_tags" + ".json"
+    const jsonFilename = "BOMTYCC_" + removeFileExtension(contentFilename) + "_" + date.replaceAll("-", "_") + ".json"
     downloadJson(data, jsonFilename)
   }
 
@@ -225,16 +233,22 @@ export default function Home() {
       if(data && data.length > 0) {
         setTags((prevState)=> {
           let newState = [...prevState]
-          for(let i = 0; i < json.data.length; i++) {
-            const v = json.data[i]
-            newState[v.entryIndex] = v.tags
+          for(let i = 0; i < data.length; i++) {
+            const v = data[i]
+            newState[v.entryIndex] = v.domains
           }
           return newState
         })
       }
   }
   function onListItemClicked(index) {
-    setSelectedContentId(index)
+    setSelectedContentId((prevState) => {
+      if(prevState === index) {
+        return -1
+      } else {
+        return index
+      }
+    })
   }
   function onTagClicked(tag, index) {
      // deletes the tag when clicked
@@ -264,15 +278,25 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Create Next App</title>
+        <title>BOMTYCC tagger</title>
         <meta name="description" content="Generated by create next app" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
+      <main className={classes([styles.main, font.variable])}>
         <div className={styles.content}>
+          <div className={styles.col2}>
+            <FormUploadDomains onDomainsUploaded={onDomainsUploaded}/>
+            {domains.length > 0 && (
+              <ListDomainButtons domains={domains} 
+                                 onDomainClicked={onDomainClicked}/>
+            )}
+          </div>
           <div className={styles.col1}>
-            <FormUploadContent onContentUploaded={onContentUploaded}/>
+            <div className={styles.forms}>
+              <FormUploadContent onContentUploaded={onContentUploaded}/>
+              <FormUploadProject onProjectUploaded={onProjectUploaded}/>
+            </div>
             <div className={styles.listTextContainer}>
               {content.length > 0 && (
                 <ListContent content={content}
@@ -283,17 +307,10 @@ export default function Home() {
               )}  
             </div>
           </div>
-          <div className={styles.col2}>
-            <FormUploadDomains onDomainsUploaded={onDomainsUploaded}/>
-            {domains.length > 0 && (
-              <ListDomainButtons domains={domains} 
-                                 onDomainClicked={onDomainClicked}/>
-            )}
-          </div>
+
         </div>
         <footer className={styles.footer}>
-          <button onClick={()=>exportJson()}> download </button>
-          <FormUploadProject onProjectUploaded={onProjectUploaded}/>
+          <button onClick={()=>exportJson()}> download project </button>
         </footer>
 
       </main>

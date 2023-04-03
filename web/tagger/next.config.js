@@ -4,6 +4,11 @@ const _ = require("lodash");
 
 const nextConfig = {
   reactStrictMode: false,
+  basePath: '/tagger',
+  reactStrictMode: true,
+  images: {
+    unoptimized: true
+  },  
   webpack: (config) => {
     // camel-case style names from css modules
     const cssRules = _.find(config.module.rules, (rule) => !!rule.oneOf).oneOf;
@@ -19,10 +24,6 @@ const nextConfig = {
     }
     return config;
   },
-  reactStrictMode: true,
-  images: {
-    unoptimized: true
-  }
 };
 
 

@@ -237,6 +237,7 @@ export default function Home() {
             const v = data[i]
             newState[v.entryIndex] = v.domains
           }
+          console.log(newState[0])
           return newState
         })
       }

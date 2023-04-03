@@ -6,3 +6,4 @@ ipynb_checkpoints/
 DS_Store
 node_modules/
 .next/
+web/tagger/out/

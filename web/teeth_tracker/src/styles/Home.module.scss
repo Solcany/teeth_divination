@@ -1,0 +1,21 @@
+$gray: #c2c2c2;
+$blue: #aede54;
+$offset1: 10px;
+$offset2: 20px;
+
+.main {
+  position: relative;
+
+
+  .img_container {
+    position: absolute;
+    z-index: 1;    
+  }
+
+  .canvas {
+    position: absolute; 
+    z-index: 999;
+  }
+}
+
+

@@ -7,3 +7,5 @@ DS_Store
 node_modules/
 .next/
 web/tagger/out/
+web/teeth_tracker/public/images/
+

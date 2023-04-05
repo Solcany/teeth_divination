@@ -8,13 +8,16 @@ import localFont from 'next/font/local'
 const font = localFont({ src: '../../public/fonts/lato-regular-webfont.woff2',
                         variable: '--lato-regular'})
 
-const IMGS_FOLDER = "images/teeth1/"
-const IMG_FIRST_IDX = 3
-const IMG_LAST_IDX = 45
-const IMGS_TOTAL = IMG_LAST_IDX - IMG_FIRST_IDX
-const TEETH_AMOUNT = 16
-const WIDTH = 1000;
-const HEIGHT = 1000;
+const IMGS_FOLDER = "images/teeth1/";
+const IMG_FIRST_IDX = 3;
+const IMG_LAST_IDX = 45;
+const IMGS_TOTAL = IMG_LAST_IDX - IMG_FIRST_IDX;
+const TOOTH_FIRST = 1;
+const TOOTH_LAST = 10;
+const TEETH_TOTAL = TOOTH_LAST - TOOTH_FIRST;
+
+const WIDTH = 2000;
+const HEIGHT = 2000;
 
 const IMGS_PATHS = range(IMGS_TOTAL+1, IMG_FIRST_IDX).map((v) => {
   return IMGS_FOLDER + v.toString().padStart(3, '0') + ".png"
@@ -26,7 +29,7 @@ function range(size, startAt = 0) {
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState(0)
-  const [data, setData] = useState(new Array(TEETH_AMOUNT).fill([]))
+  const [data, setData] = useState(new Array(TEETH_TOTAL).fill([]))
   const [currentToothIndex, setCurrentToothIndex] = useState(0)
   const imgRef = useRef(null)
   const canvasRef = useRef(null)
@@ -41,21 +44,20 @@ export default function Home() {
           newState[currentToothIndex] = [...newState[currentToothIndex], [x,y]];
           return newState;
         })
-
-        setCurrentStep(prevState => {
-          if(prevState === IMGS_TOTAL-1) {
-            return prevState
-          } else  {
-            return prevState + 1
-          }
-        })
+        // setCurrentStep(prevState => {
+        //   if(prevState === IMGS_TOTAL-1) {
+        //     return prevState
+        //   } else  {
+        //     return prevState + 1
+        //   }
+        // })
     }
 
 
   useEffect(() => {
     const handleKeyPress = (event) => {
-      // right key, next imageeeee
-      if (event.keyCode === 39) {
+      // right key, next image
+      if (event.key === "d") {
         setCurrentStep(prevState => {
           if(prevState === IMGS_TOTAL-1) {
             return 0
@@ -64,9 +66,8 @@ export default function Home() {
           }
         })
       }
-
       // left key, prev image
-      if (event.keyCode === 37) {
+      else if (event.key === "a") {
         setCurrentStep(prevState => {
           if(prevState === 0) {
             return IMGS_TOTAL-1
@@ -74,8 +75,26 @@ export default function Home() {
             return prevState - 1
           }
         })
-      }      
-    };
+      // up key, next tooth
+      } else if (event.key === "w") {
+          setCurrentToothIndex(prevState => {
+            if(prevState === TEETH_TOTAL) {
+              return 0
+            } else  {
+              return prevState + 1
+            }          
+          })
+      // down key, prev tooth    
+      } else if (event.key === "s") {
+          setCurrentToothIndex(prevState => {
+            if(prevState === 0) {
+              return TEETH_TOTAL-1
+            } else  {
+              return prevState - 1
+            }          
+          })
+      };
+    }
     window.addEventListener("keydown", handleKeyPress);
     return () => {
       window.removeEventListener("keydown", handleKeyPress);

@@ -149,6 +149,25 @@ export default function Home() {
               return prevState - 1
             }          
           })
+      // delete last vertex
+      } else if (event.key === "u") {
+        setData(prevState => {
+          if(prevState[currentToothIndex].toothPositions.length > 0) {
+            let newState = [...prevState];
+            newState[currentToothIndex].toothPositions = newState[currentToothIndex].toothPositions.slice(0, -1);
+            return newState;
+          } else {
+            return prevState;
+          }
+        })
+        // return to previous brace image
+        setCurrentBrace(prevState => {
+          if(prevState === 0) {
+            return prevState
+          } else  {
+            return prevState - 1
+          }
+        })        
       };
     }
     window.addEventListener("keydown", handleKeyPress);
@@ -172,6 +191,7 @@ export default function Home() {
 
   useEffect(()=> {
     if(canvasRef.current && data[currentToothIndex].toothPositions.length > 1) {
+      canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
       // Draw the line on the canvas
       canvasCtx.beginPath();
       let d = data[currentToothIndex].toothPositions;
@@ -228,7 +248,7 @@ export default function Home() {
           <button onClick={handleDownloadButtonClick}>download</button>
           <FormUploadProject onProjectUploaded={handleProjectUploaded}/>
         </div>
-        <canvas onClick={(e) => handleCanvasClick(e)}
+        <canvas onMouseUp={(e) => handleCanvasClick(e)}
                 ref={canvasRef}
                 width={WIDTH}
                 height={HEIGHT}

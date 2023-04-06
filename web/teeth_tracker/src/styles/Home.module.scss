@@ -6,15 +6,20 @@ $offset2: 20px;
 .main {
   position: relative;
 
+  .hud {
+    position: fixed;
+    bottom: 0;
+    z-index: 10;
+  }
 
   .img_container {
     position: absolute;
-    z-index: 1;    
+    z-index: 1;
   }
 
   .canvas {
     position: absolute; 
-    z-index: 999;
+    z-index: 9;
   }
 }
 

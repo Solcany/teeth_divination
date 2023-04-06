@@ -20,6 +20,7 @@ $offset2: 20px;
   .canvas {
     position: absolute; 
     z-index: 9;
+    overflow: scroll;
   }
 }
 

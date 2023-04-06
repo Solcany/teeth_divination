@@ -12,20 +12,19 @@ const IMGS_FOLDER = "images/teeth1/";
 const IMG_FIRST_IDX = 3;
 const IMG_LAST_IDX = 45;
 const IMGS_TOTAL = IMG_LAST_IDX - IMG_FIRST_IDX;
-const TOOTH_FIRST = 1;
-const TOOTH_LAST = 10;
-const TEETH_TOTAL = TOOTH_LAST - TOOTH_FIRST;
 const TEETH_DIR = "up"
-// left to right
+// teeth meridian read left to right
 const TEETH_UP_MERIDIAN = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24 ,25, 26, 27, 28]
-const TEETH_LOW_MERIDIAN = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38] 
+const TEETH_LOW_MERIDIAN = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
+const THE_MERIDIAN = TEETH_DIR === "up" ? TEETH_UP_MERIDIAN : TEETH_LOW_MERIDIAN
 const WIDTH = 2000;
 const HEIGHT = 2000;
 const IMGS_PATHS = range(IMGS_TOTAL+1, IMG_FIRST_IDX).map((v) => {
   return IMGS_FOLDER + v.toString().padStart(3, '0') + ".png"
 })
 
-function getDateString() {
+// utils 
+function getDateString(divider="-") {
   const date = new Date();
   let minute = date.getMinutes();
   let seconds = date.getSeconds();    
@@ -33,8 +32,8 @@ function getDateString() {
   let day = date.getDate();
   let month = date.getMonth() + 1;
   let year = date.getFullYear();
-  return `${hours}${minute}${seconds}${day}${month}${year}`;
-}
+  return `${hours}${divider}${minute}${divider}${seconds}${divider}${day}${divider}${month}${divider}${year}`;
+} 
 
 function downloadJson(object, filename) {
   const json = JSON.stringify(object, null, 2);
@@ -53,6 +52,32 @@ function range(size, startAt = 0) {
     return [...Array(size).keys()].map(i => i + startAt);
 }
 
+function FormUploadProject({onProjectUploaded}) { 
+  function changeHandler(e) {
+    if(e.target.files.length > 0) {
+      const reader = new FileReader();
+      reader.readAsText(e.target.files[0]);
+      reader.onload = function(e) {
+        const json = JSON.parse(e.target.result)
+        onProjectUploaded(json)
+      }
+    }
+  }
+  return (
+        <form method="post" encType="multipart/form-data">
+            <label htmlFor="file">Upload .json</label>
+            <input 
+              onChange={changeHandler}
+              accept=".json"
+              type="file" 
+              id="file" 
+              name="file"/>
+        </form>
+  )
+}  
+
+
+
 export default function Home() {
   const [currentBrace, setCurrentBrace] = useState(0)
   const [data, setData] = useState(initData())
@@ -62,15 +87,14 @@ export default function Home() {
   const [canvasCtx, setCanvasCtx] = useState(null)
 
   function initData() {
-    let meridian = TEETH_DIR === "up" ? TEETH_UP_MERIDIAN : TEETH_LOW_MERIDIAN
-    return meridian.map((v)=> {
+    return THE_MERIDIAN.map((v)=> {
       return { toothId: v, 
                toothPositions: []}
     })
   }
   function handleCanvasClick(event) {
-        var x = event.clientX - canvasRef.current.offsetLeft;
-        var y = event.clientY - canvasRef.current.offsetTop;
+        var x = event.clientX + document.documentElement.scrollLeft;
+        var y = event.clientY + document.documentElement.scrollTop;
 
         setData(prevState => {
           let newState = [...prevState];
@@ -110,7 +134,7 @@ export default function Home() {
       // up key, next tooth
       } else if (event.key === "w") {
           setCurrentToothIndex(prevState => {
-            if(prevState === TEETH_TOTAL) {
+            if(prevState === THE_MERIDIAN.length-1) {
               return 0
             } else  {
               return prevState + 1
@@ -120,7 +144,7 @@ export default function Home() {
       } else if (event.key === "s") {
           setCurrentToothIndex(prevState => {
             if(prevState === 0) {
-              return TEETH_TOTAL-1
+              return THE_MERIDIAN.length-1
             } else  {
               return prevState - 1
             }          
@@ -177,8 +201,14 @@ export default function Home() {
 
   function handleDownloadButtonClick() {
     const json = getExportJson()
-    const filename = "BOMTYCC_teeth_" + getDateString() + ".json"
+    const filename = "BOMTYCC_teeth_" + getDateString("") + ".json"
     downloadJson(json, filename)    
+  }
+
+  function handleProjectUploaded(projectData) {
+    if(projectData.data && projectData.data.length > 0) {
+      setData(projectData.data)
+    }
   }
 
   return (
@@ -193,17 +223,18 @@ export default function Home() {
         <div className={styles.hud}>
           tooth num: {data[currentToothIndex].toothId}
           <br/>
-          brace num: {data[currentToothIndex].toothId}
+          brace num: {currentBrace}
           <br/>
           <button onClick={handleDownloadButtonClick}>download</button>
+          <FormUploadProject onProjectUploaded={handleProjectUploaded}/>
         </div>
-        <canvas onMouseDown={(e) => handleCanvasClick(e)}
+        <canvas onClick={(e) => handleCanvasClick(e)}
                 ref={canvasRef}
                 width={WIDTH}
                 height={HEIGHT}
                 className={styles.canvas}/>
         <div className={styles.imgContainer}>
-          <img src={IMGS_PATHS[currentBrace]}
+          <img ref={imgRef} src={IMGS_PATHS[currentBrace]}
                style={{width: WIDTH + "px", height: HEIGHT + "px"}}/>
         </div>
         <span>{currentBrace+1}/{IMGS_TOTAL}</span>

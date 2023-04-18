@@ -4,7 +4,7 @@ const _ = require("lodash");
 
 const nextConfig = {
   //basePath: '/',
-  reactStrictMode: true,
+  reactStrictMode: false,
   images: {
     unoptimized: true
   },  

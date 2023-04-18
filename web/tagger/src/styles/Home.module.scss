@@ -1,5 +1,6 @@
 $gray: #c2c2c2;
 $blue: #aede54;
+$offset0: 3px;
 $offset1: 10px;
 $offset2: 20px;
 
@@ -86,26 +87,42 @@ $offset2: 20px;
           }
         }
       }
+
+      .tags_counter {
+        padding: $offset2 $offset1;
+        font-family: var(--lato-regular);
+
+        .label {
+          display: block;
+        }
+
+      }
     }
     .col2 {
       width: 30%;
       height: 100%; 
+      display: flex;
+      flex-direction: column;
 
-      .list_domains {
-          padding: $offset2 $offset1;
-          display: flex;
-          flex-wrap: wrap;
+      .buttons_container {
+        overflow-y: auto;
 
-          li {
-            padding: $offset1 $offset1;
+        .list_domains {
+            padding: $offset2 $offset1;
+            display: flex;
+            flex-wrap: wrap;
 
-            button {
-            &:hover {
-              cursor: pointer;
-            }                
+            li {
+              padding: $offset0 $offset1;
+
+              button {
+              &:hover {
+                cursor: pointer;
+              }                
+              }
             }
-          }
-      }   
+        } 
+      }
     }
   }
 

@@ -8,17 +8,17 @@ import localFont from 'next/font/local'
 const font = localFont({ src: '../../public/fonts/lato-regular-webfont.woff2',
                         variable: '--lato-regular'})
 
-const IMGS_FOLDER = "images/teeth1/";
+const TEETH_ORIENTATION = "up"
+// teeth meridian read left to right
+const TEETH_UP_MERIDIAN = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24 ,25, 26, 27, 28]
+const TEETH_DOWN_MERIDIAN = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
+const IMGS_FOLDER = TEETH_ORIENTATION == "up" ? "images/teeth_up/" : "images/teeth_down/";
+const THE_MERIDIAN = TEETH_ORIENTATION == "up" ? TEETH_UP_MERIDIAN : TEETH_DOWN_MERIDIAN;
+const WIDTH = 2000;
+const HEIGHT = 2000;
 const IMG_FIRST_IDX = 3;
 const IMG_LAST_IDX = 45;
 const IMGS_TOTAL = IMG_LAST_IDX - IMG_FIRST_IDX;
-const TEETH_DIR = "up"
-// teeth meridian read left to right
-const TEETH_UP_MERIDIAN = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24 ,25, 26, 27, 28]
-const TEETH_LOW_MERIDIAN = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
-const THE_MERIDIAN = TEETH_DIR === "up" ? TEETH_UP_MERIDIAN : TEETH_LOW_MERIDIAN
-const WIDTH = 2000;
-const HEIGHT = 2000;
 const IMGS_PATHS = range(IMGS_TOTAL+1, IMG_FIRST_IDX).map((v) => {
   return IMGS_FOLDER + v.toString().padStart(3, '0') + ".png"
 })
@@ -80,9 +80,8 @@ function FormUploadProject({onProjectUploaded}) {
 
 export default function Home() {
   const [currentBrace, setCurrentBrace] = useState(0)
-  const [data, setData] = useState(initData())
   const [currentToothIndex, setCurrentToothIndex] = useState(0)
-  const imgRef = useRef(null)
+  const [data, setData] = useState(initData())
   const canvasRef = useRef(null)
   const [canvasCtx, setCanvasCtx] = useState(null)
 
@@ -210,7 +209,7 @@ export default function Home() {
     let json = {}
     json.canvasWidth = WIDTH
     json.canvasHeight = HEIGHT
-    json.teethDirection = TEETH_DIR
+    json.teethDirection = TEETH_ORIENTATION
     json.data = [...data]
     return json
   }
@@ -220,8 +219,9 @@ export default function Home() {
   }
 
   function handleDownloadButtonClick() {
+    console.log(data)
     const json = getExportJson()
-    const filename = "BOMTYCC_teeth_" + getDateString("") + ".json"
+    const filename = "BOMTYCC_teeth_" + TEETH_ORIENTATION + "_" + getDateString("") + ".json"
     downloadJson(json, filename)    
   }
 
@@ -248,13 +248,13 @@ export default function Home() {
           <button onClick={handleDownloadButtonClick}>download</button>
           <FormUploadProject onProjectUploaded={handleProjectUploaded}/>
         </div>
-        <canvas onMouseUp={(e) => handleCanvasClick(e)}
+        <canvas onClick={(e) => handleCanvasClick(e)}
                 ref={canvasRef}
                 width={WIDTH}
                 height={HEIGHT}
                 className={styles.canvas}/>
         <div className={styles.imgContainer}>
-          <img ref={imgRef} src={IMGS_PATHS[currentBrace]}
+          <img src={IMGS_PATHS[currentBrace]}
                style={{width: WIDTH + "px", height: HEIGHT + "px"}}/>
         </div>
         <span>{currentBrace+1}/{IMGS_TOTAL}</span>

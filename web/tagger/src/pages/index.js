@@ -7,9 +7,8 @@ import {classes, parseCsvFile} from '@/utils/utils'
 import localFont from 'next/font/local'
 const font = localFont({ src: '../../public/fonts/lato-regular-webfont.woff2',
                         variable: '--lato-regular'})
+
 const FORMATTER = '\n\n'
-
-
 
 function FormUploadContent({onContentUploaded}) {
   function changeHandler(e) {
@@ -48,8 +47,8 @@ function FormUploadDomains({onDomainsUploaded}) {
       reader.readAsText(e.target.files[0]);
       reader.onload = function(e) {
         const rows = parseCsvFile(e.target.result)
-        let domains = rows.map((row) => row.Domain)
-        domains = domains.filter((domain) => domain !== "")
+        let domains = rows.map((row) => ({domain: row.Domain, group: parseInt(row.Group)}))
+        domains = domains.filter((domain) => domain.domain !== "")
         onDomainsUploaded([filename, domains])
       }
     }
@@ -141,21 +140,71 @@ function ListContent({selectedItemIndex,
 }
 
   function ListDomainButtons({domains, onDomainClicked}) {
-    return (
-      <ul className={styles.list_domains}>
-        {
-          domains.map((domain, index) => {
-            return (
-              <li key={index} >
-                <button onClick={()=> onDomainClicked(domain)}>{domain}</button>  
-              </li>                
 
-            )
-          })
-        }      
-      </ul>
+    function getDomainGroups() {
+      if(domains && domains.length > 0) {
+        const n_groups = domains.reduce((acc, domain) => {
+          if(acc.includes(domain.group)) {
+            return acc
+          } else {
+            return [...acc, domain.group]
+          }
+        }, []).length
+        let groups = new Array(n_groups).fill([])
+        domains.forEach((domain) => {
+          groups[domain.group] = [...groups[domain.group], {...domain}]
+        })
+        return groups
+      }
+    } 
+
+    return (
+      <>
+        {getDomainGroups().map((group, index) => {
+          return (
+             <ul key={index} 
+                 className={styles.list_domains}>
+                {
+                  group.map((domain, index) => {
+                    return (
+                      <li key={index} >
+                        <button onClick={()=> onDomainClicked(domain.domain)}>{domain.domain}</button>  
+                      </li>                
+
+                    )
+                  })
+                }      
+              </ul>
+          )
+        })}
+      </>
+
     )
   }
+
+
+  function TaggedParagraphsCounter(tags) {
+    function getTagsCount() {
+        const count = tags.tags.reduce((acc, arr) => {
+          if(arr.length > 0) {
+            return acc + 1;
+          } else {
+            return acc;
+          }
+        }, 0)
+        return count
+    }
+    return (
+      <div className={styles.tagsCounter}>
+        <span className={styles.label}>
+          Amount of tagged paragraphs:
+        </span>
+        <span>
+          {getTagsCount()}
+        </span>
+      </div>
+    )
+  } 
 
 
 export default function Home() {
@@ -221,23 +270,20 @@ export default function Home() {
     setContent(content)
     setTags(new Array(content.length).fill([]))
   }
-
   function onDomainsUploaded(data) {
         const[filename, domains] = data 
         setDomainsFilename(filename)
         setDomains(domains)
   }
-
   function onProjectUploaded(data) {
     // set tags from json to the current tags
       if(data && data.length > 0) {
-        setTags((prevState)=> {
+        setTags((prevState) => {
           let newState = [...prevState]
           for(let i = 0; i < data.length; i++) {
             const v = data[i]
             newState[v.entryIndex] = v.domains
           }
-          console.log(newState[0])
           return newState
         })
       }
@@ -288,15 +334,20 @@ export default function Home() {
         <div className={styles.content}>
           <div className={styles.col2}>
             <FormUploadDomains onDomainsUploaded={onDomainsUploaded}/>
-            {domains.length > 0 && (
-              <ListDomainButtons domains={domains} 
-                                 onDomainClicked={onDomainClicked}/>
+            {domains && domains.length > 0 && (
+              <div className={styles.buttonsContainer}>
+                <ListDomainButtons domains={domains} 
+                                   onDomainClicked={onDomainClicked}/>                   
+              </div>             
             )}
           </div>
           <div className={styles.col1}>
             <div className={styles.forms}>
               <FormUploadContent onContentUploaded={onContentUploaded}/>
               <FormUploadProject onProjectUploaded={onProjectUploaded}/>
+              {tags && 
+                (<TaggedParagraphsCounter tags={tags}/>)
+              }
             </div>
             <div className={styles.listTextContainer}>
               {content.length > 0 && (

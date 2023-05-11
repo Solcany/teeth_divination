@@ -86,15 +86,12 @@ function FormUploadProject({onProjectUploaded}) {
 export default function Home() {
   const [currentBrace, setCurrentBrace] = useState(0)
   const [currentToothIndex, setCurrentToothIndex] = useState(0)
-  const [data, setData] = useState(initData())
+  const [data, setData] = useState(THE_MERIDIAN.map((v)=> {
+                                      return { toothId: v, 
+                                               toothPositions: []}
+                                    }))
   const canvasRef = useRef(null)
 
-  function initData() {
-    return THE_MERIDIAN.map((v)=> {
-      return { toothId: v, 
-               toothPositions: []}
-    })
-  }
   function handleCanvasClick(event) {
         var x = event.clientX + document.documentElement.scrollLeft;
         var y = event.clientY + document.documentElement.scrollTop;
@@ -112,7 +109,7 @@ export default function Home() {
 
         setCurrentBrace(prevState => {
           // restrict current brace 
-          if(prevState >= IMGS_TOTAL) {
+          if(prevState === IMGS_TOTAL) {
             return prevState
           } else  {
             return prevState + 1
@@ -163,13 +160,15 @@ export default function Home() {
       } else if (event.key === "u") {
         setData(prevState => {
             let newState = [...prevState];
-            newState[currentToothIndex].toothPositions = newState[currentToothIndex].toothPositions.slice(0, -1);
+            let updated = newState[currentToothIndex].toothPositions.slice(0, -1);
+            newState[currentToothIndex].toothPositions = updated
+
             return newState;
         })
-        // return to previous brace image
+        // return to the previous brace image
         setCurrentBrace(prevState => {
           if(prevState === 0) {
-            return prevState
+            return 0
           } else  {
             return prevState - 1
           }
@@ -180,7 +179,9 @@ export default function Home() {
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
-  }, []);
+  }, [currentToothIndex]); // WIP: not sure if this is the most efficient way to do it, but the
+  // dependancy is necessary to reapply event listeners with updated value of tooth index,
+  // this might be super inefficient
 
   useEffect(()=> {
     // canvas settings
@@ -225,7 +226,6 @@ export default function Home() {
   }
 
   function handleDownloadButtonClick() {
-    console.log(data)
     const json = getExportJson()
     const filename = "BOMTYCC_teeth_" + TEETH_ORIENTATION + "_" + getDateString("") + ".json"
     downloadJson(json, filename)    

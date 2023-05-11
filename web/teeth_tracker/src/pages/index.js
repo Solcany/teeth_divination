@@ -28,6 +28,7 @@ const IMGS_TOTAL = IMG_LAST_IDX - IMG_FIRST_IDX;
 const IMGS_PATHS = range(IMGS_TOTAL+1, IMG_FIRST_IDX).map((v) => {
   return IMGS_FOLDER + v.toString().padStart(3, '0') + ".png"
 })
+const PI = 3.141592653
 
 // utils 
 function getDateString(divider="-") {
@@ -100,7 +101,7 @@ export default function Home() {
 
         setData(prevState => {
           // don't add new vertices if last brace is reached
-          if(currentBrace === IMGS_TOTAL-1) {
+          if(currentBrace >= IMGS_TOTAL) {
             return prevState;
           } else {
             let newState = [...prevState];
@@ -111,7 +112,7 @@ export default function Home() {
 
         setCurrentBrace(prevState => {
           // restrict current brace 
-          if(prevState === IMGS_TOTAL-1) {
+          if(prevState >= IMGS_TOTAL) {
             return prevState
           } else  {
             return prevState + 1
@@ -187,6 +188,7 @@ export default function Home() {
     if(ctx) {
       ctx.strokeStyle = "#000000";
       ctx.lineWidth = 0.5;
+      ctx.font = "10px Georgia";
     }
   }, [canvasRef])  
 
@@ -197,12 +199,16 @@ export default function Home() {
       // Draw the line on the canvas
       ctx.beginPath();
       let d = data[currentToothIndex].toothPositions;
-      console.log(d)
+      let rot_step = PI / IMGS_TOTAL
+
       for(let i = 0; i < d.length - 1; i++) {
         const [startX, startY] = d[i];
         const [endX, endY] = d[i+1];
         ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);        
+        ctx.lineTo(endX, endY);
+        let txtX = startX + 50
+        let txtY = startY     
+        ctx.fillText(i.toString(), txtX, txtY);        
 
       }
       ctx.stroke();
@@ -216,10 +222,6 @@ export default function Home() {
     json.teethDirection = TEETH_ORIENTATION
     json.data = [...data]
     return json
-  }
-
-  function normaliseTeethPositions() {
-    // wip
   }
 
   function handleDownloadButtonClick() {

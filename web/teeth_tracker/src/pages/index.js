@@ -1,3 +1,9 @@
+// D key, next image
+// A key, prev image
+// W key, next tooth
+// S key, prev tooth    
+// U key, last vertex
+
 import {useState, useRef, useMemo, useEffect} from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
@@ -14,8 +20,8 @@ const TEETH_UP_MERIDIAN = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24 ,25, 2
 const TEETH_DOWN_MERIDIAN = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
 const IMGS_FOLDER = TEETH_ORIENTATION == "up" ? "images/teeth_up/" : "images/teeth_down/";
 const THE_MERIDIAN = TEETH_ORIENTATION == "up" ? TEETH_UP_MERIDIAN : TEETH_DOWN_MERIDIAN;
-const WIDTH = 2000;
-const HEIGHT = 2000;
+const WIDTH = 3000;
+const HEIGHT = 3000;
 const IMG_FIRST_IDX = 3;
 const IMG_LAST_IDX = 45;
 const IMGS_TOTAL = IMG_LAST_IDX - IMG_FIRST_IDX;
@@ -76,8 +82,6 @@ function FormUploadProject({onProjectUploaded}) {
   )
 }  
 
-
-
 export default function Home() {
   const [currentBrace, setCurrentBrace] = useState(0)
   const [currentToothIndex, setCurrentToothIndex] = useState(0)
@@ -96,11 +100,18 @@ export default function Home() {
         var y = event.clientY + document.documentElement.scrollTop;
 
         setData(prevState => {
-          let newState = [...prevState];
-          newState[currentToothIndex].toothPositions = [...newState[currentToothIndex].toothPositions, [x,y]];
-          return newState;
+          // don't add new vertices if last brace is reached
+          if(currentBrace === IMGS_TOTAL-1) {
+            return prevState;
+          } else {
+            let newState = [...prevState];
+            newState[currentToothIndex].toothPositions = [...newState[currentToothIndex].toothPositions, [x,y]];
+            return newState;
+          }
         })
+
         setCurrentBrace(prevState => {
+          // restrict current brace 
           if(prevState === IMGS_TOTAL-1) {
             return prevState
           } else  {
@@ -151,7 +162,7 @@ export default function Home() {
       // delete last vertex
       } else if (event.key === "u") {
         setData(prevState => {
-          if(prevState[currentToothIndex].toothPositions.length > 0) {
+          if(prevState[currentToothIndex].toothPositions.length >= 0) {
             let newState = [...prevState];
             newState[currentToothIndex].toothPositions = newState[currentToothIndex].toothPositions.slice(0, -1);
             return newState;
@@ -203,7 +214,7 @@ export default function Home() {
       }
       canvasCtx.stroke();
     }
-  }, [data])
+  }, [data, currentToothIndex])
 
   function getExportJson() {
     let json = {}

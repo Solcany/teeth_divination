@@ -87,7 +87,6 @@ export default function Home() {
   const [currentToothIndex, setCurrentToothIndex] = useState(0)
   const [data, setData] = useState(initData())
   const canvasRef = useRef(null)
-  const [canvasCtx, setCanvasCtx] = useState(null)
 
   function initData() {
     return THE_MERIDIAN.map((v)=> {
@@ -162,13 +161,9 @@ export default function Home() {
       // delete last vertex
       } else if (event.key === "u") {
         setData(prevState => {
-          if(prevState[currentToothIndex].toothPositions.length >= 0) {
             let newState = [...prevState];
             newState[currentToothIndex].toothPositions = newState[currentToothIndex].toothPositions.slice(0, -1);
             return newState;
-          } else {
-            return prevState;
-          }
         })
         // return to previous brace image
         setCurrentBrace(prevState => {
@@ -187,32 +182,30 @@ export default function Home() {
   }, []);
 
   useEffect(()=> {
+    // canvas settings
+    let ctx = canvasRef.current.getContext("2d")
+    if(ctx) {
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 0.5;
+    }
+  }, [canvasRef])  
+
+  useEffect(()=> {
     if(canvasRef.current) {
-      setCanvasCtx(canvasRef.current.getContext("2d"))
-    }
-  }, [])
-
-  useEffect(()=> {
-    if(canvasCtx) {
-      canvasCtx.strokeStyle = "#000000";
-      canvasCtx.lineWidth = 2;
-    }
-  }, [canvasCtx])  
-
-  useEffect(()=> {
-    if(canvasRef.current && data[currentToothIndex].toothPositions.length > 1) {
-      canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+      let ctx = canvasRef.current.getContext("2d")
+      ctx.clearRect(0, 0, WIDTH, HEIGHT);
       // Draw the line on the canvas
-      canvasCtx.beginPath();
+      ctx.beginPath();
       let d = data[currentToothIndex].toothPositions;
+      console.log(d)
       for(let i = 0; i < d.length - 1; i++) {
         const [startX, startY] = d[i];
         const [endX, endY] = d[i+1];
-        canvasCtx.moveTo(startX, startY);
-        canvasCtx.lineTo(endX, endY);        
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);        
 
       }
-      canvasCtx.stroke();
+      ctx.stroke();
     }
   }, [data, currentToothIndex])
 

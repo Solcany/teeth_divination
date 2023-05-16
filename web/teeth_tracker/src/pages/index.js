@@ -14,7 +14,7 @@ import localFont from 'next/font/local'
 const font = localFont({ src: '../../public/fonts/lato-regular-webfont.woff2',
                         variable: '--lato-regular'})
 
-const TEETH_ORIENTATION = "up"
+const TEETH_ORIENTATION = "down"
 // teeth meridian read left to right
 const TEETH_UP_MERIDIAN = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24 ,25, 26, 27, 28]
 const TEETH_DOWN_MERIDIAN = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]

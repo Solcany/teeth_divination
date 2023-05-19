@@ -29,6 +29,16 @@ def normalise_tooth_positions(teeth_pos):
 
     return normalised_pos
 
-
+def normalise_teeth_distances(positions):
+    dists = []
+    for i in range(len(positions)-1):
+        A = np.array(positions[i])
+        B = np.array(positions[i+1])
+        dist = get_dist(A,B)       
+        dists.append(dist)
+    dists = np.array(dists)
+    max_dist = dists[np.argmax(dists)]
+    normalised = [d/max_dist for d in dists]
+    return normalised
 
 
